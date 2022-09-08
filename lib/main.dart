@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
+// models
+import 'models/colored_bar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,16 +33,21 @@ class MyApplication extends StatefulWidget {
 }
 
 class _MyApplicationState extends State<MyApplication> {
-  int counter = 1;
-  List<String> items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
-  late ValueNotifier<List<String>> _itemsNotifier;
+  // int counter = 1;
+  // List<String> items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
   late ValueNotifier<int> _counterNotifier;
+  late ValueNotifier<List<ColoredBar>> _barsNotifier;
 
   @override
   void initState() {
     super.initState();
-    _itemsNotifier = ValueNotifier([]);
-    _counterNotifier = ValueNotifier(0);
+    _counterNotifier = ValueNotifier(1);
+    _barsNotifier = ValueNotifier([const ColoredBar(color: Colors.lightBlueAccent)]);
+  }
+
+  Color getRandomColor() {
+    List<Color> storedColors = [Colors.red, Colors.blue, Colors.green, Colors.cyan, Colors.purple, Colors.yellow];
+    return storedColors[Random().nextInt(storedColors.length)];
   }
 
   @override
@@ -66,6 +74,20 @@ class _MyApplicationState extends State<MyApplication> {
             children: [
               // Value Listenable Builder are used to listen to the changes in the value notifier...
               ValueListenableBuilder(
+                valueListenable: _barsNotifier,
+                builder: (_, List<ColoredBar> barsList, __) {
+                  return FittedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ...barsList
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 40),
+              ValueListenableBuilder(
                   valueListenable: _counterNotifier,
                   builder: (_, int value, __) {
                     return Center(
@@ -77,27 +99,19 @@ class _MyApplicationState extends State<MyApplication> {
                       ),
                     );
                   }),
-              ValueListenableBuilder(
-                valueListenable: _itemsNotifier,
-                builder: (_, List<String> values, __) {
-                  return Text(
-                    values.join(', '),
-                  );
-                },
-              ),
             ],
           ),
           Positioned(
-            bottom: 0,
+            bottom: 10,
             left: 20,
             child: SafeArea(
               child: FloatingActionButton(
                 onPressed: () {
-                  _itemsNotifier.value = [
-                    ..._itemsNotifier.value,
-                    'Item $counter',
+                  _barsNotifier.value = [
+                    ..._barsNotifier.value, ColoredBar(color: getRandomColor()),
                   ];
                 },
+                backgroundColor: Colors.cyan,
                 child: const Icon(
                   Icons.add,
                 ),
@@ -112,7 +126,7 @@ class _MyApplicationState extends State<MyApplication> {
   @override
   void dispose() {
     _counterNotifier.dispose();
-    _itemsNotifier.dispose();
+    _barsNotifier.dispose();
     super.dispose();
   }
 }
